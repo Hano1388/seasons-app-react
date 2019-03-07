@@ -1,39 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import SeasonDisplay from './SeasonDisplay';
 import Loader from './Loader';
 
+const App = () => {
+  const [lat,setLat] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
-class App extends React.Component {
+  useEffect(() => {
+    window.navigator.geolocation.getCurrentPosition(
+      position => setLat(position.coords.latitude),
+      err => setErrorMsg(err.message )
+    );
+  }, []);
 
-    state = { lat: null, errorMsg: '' };
-
-    componentDidMount() {
-      window.navigator.geolocation.getCurrentPosition(
-        position => this.setState({ lat: position.coords.latitude }),
-        err => this.setState({ errorMsg: err.message })
-      );
-    }
-
-    renderContent() {
-      if (this.state.errorMsg && !this.state.lat) {
-        return <div>Error: { this.state.errorMsg }</div>
-      }
-      if (!this.state.errorMsg && this.state.lat) {
-        return <SeasonDisplay lat={this.state.lat}/>
-      }
-
-      return <Loader message="Please accept location request"/>
-    }
-
-  render() {
-    return (
-      <div className="container">
-        { this.renderContent() }
-      </div>
-    )
+  let content;
+  if(errorMsg) {
+    content = <div>Error: { errorMsg }</div>
+  } else if(lat) {
+    content = <SeasonDisplay lat={lat}/>
+  } else {
+    content = <Loader message="Please accept location request"/>
   }
-}
+
+  return <div className="container">{content}</div>;
+};
 
 ReactDOM.render(
   <App />,
